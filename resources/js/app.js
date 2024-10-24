@@ -1,1 +1,3 @@
-import './bootstrap';
+import "./bootstrap";
+
+import "./functions/chat-preview/index.js";
