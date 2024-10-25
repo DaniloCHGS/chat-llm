@@ -110,6 +110,20 @@
             isUser: false
         });
         toggleSubmitButton(false);
+
+        const buttonCopyMessages = [...document.querySelectorAll('[data-copy-message]')];
+        buttonCopyMessages.forEach(button => {
+            button.addEventListener('click', () => {
+                console.log('asdasd');
+
+                const messageId = button.dataset.copyMessage;
+
+                const messageToCopy = document.getElementById(messageId).innerText;
+                console.log(messageToCopy);
+
+                copyToClipboard(messageToCopy);
+            });
+        });
     });
 
     function appendMessage({
@@ -119,12 +133,21 @@
     }) {
         const avatarSrc = isUser ? 'default-avatar.png' : 'grimore-avatar.webp';
         const typingClass = isTyping ? "animate-pulse" : "";
+        const id = window.crypto.randomUUID();
         const messageHTML = `
             <div data-is-user="${isUser}" class="flex data-[is-user=true]:flex-row-reverse gap-2 mb-2">
                 <div class="w-6 h-6 overflow-hidden rounded-full">
                     <img src="${avatarSrc}" alt="Avatar" class="" />
                 </div>
-                <p class="flex-1 py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words ${typingClass}">${message}</p>
+                <div data-is-user="${isUser}" class="group relative">
+                    <p id="${id}" class="flex-1  py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words max-w-max ${typingClass}">${message}</p>
+                    <button data-copy-message="${id}" class="bg-white hidden group-hover:flex absolute top-0 -right-6 group-data-[is-user=true]:-left-6 rounded-full w-10 h-10 items-center justify-center transition-all hover:scale-110">
+                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"></path>
+                            <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         `;
         chatContainer.insertAdjacentHTML('beforeend', messageHTML);
@@ -136,5 +159,9 @@
         const submitButton = document.querySelector('[form="form-chat"]');
         submitButton.disabled = isDisabled;
         submitButton.classList.toggle("opacity-50", isDisabled);
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
     }
 </script>
