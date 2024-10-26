@@ -41,12 +41,14 @@
         @endforeach
     </div>
     <footer class="bg-[#f6f8fecc] flex items-center gap-2 border-t py-6 px-8">
-        <form id="form-chat" class="flex-1 bg-white rounded-full border p-2 pr-3 flex items-center gap-2">
-            <button class="w-10 h-10 rounded-full bg-purple-400 text-white flex items-center justify-center">
+        <form id="form-chat" enctype="multipart/form-data" class="flex-1 bg-white rounded-full border p-2 pr-3 flex items-center gap-2">
+            @csrf
+            <label for="image-upload" class="w-10 h-10 rounded-full bg-purple-400 text-white flex items-center justify-center hover:cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip">
                     <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                 </svg>
-            </button>
+            </label>
+            <input type="file" id="image-upload" accept="image/*" class="hidden" />
             <input id="input-prompt" type="text" placeholder="Digite uma mensagem" class="flex-1 outline-none text-base">
             <div class="flex items-center gap-2">
                 <button class="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:bg-purple-300 hover:text-white">
@@ -80,6 +82,7 @@
     const chatContainer = document.getElementById("chat");
     const formChat = document.getElementById("form-chat");
     const inputPrompt = document.getElementById("input-prompt");
+    const inputFile = document.getElementById('image-upload');
 
     formChat.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -118,11 +121,45 @@
                 const messageId = button.dataset.copyMessage;
 
                 const messageToCopy = document.getElementById(messageId).innerText;
-                console.log(messageToCopy);
 
                 copyToClipboard(messageToCopy);
             });
         });
+    });
+
+    inputFile.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+            const imageUrl = event.target.result;
+
+            // URL do avatar do usuário
+            const userAvatarUrl = "default-avatar.png";
+
+            // HTML do avatar e da imagem enviada
+            const imageContainer = `
+            <div data-is-user="true" class="flex flex-row-reverse gap-2 mb-2">
+                <div class="w-6 h-6 overflow-hidden rounded-full">
+                    <img src="${userAvatarUrl}" alt="Avatar" class="object-cover w-full h-full" />
+                </div>
+                <img src="${imageUrl}" alt="Uploaded Image" class="w-[200px] h-auto py-3 px-6 rounded-3xl bg-purple-300/10" />
+            </div>
+        `;
+
+            // Inserir o HTML no chatContainer
+            chatContainer.insertAdjacentHTML('beforeend', imageContainer);
+
+            // Enviar a imagem para a API
+            const botMessage = await sendImageToAPI(file);
+
+            appendMessage({
+                message: botMessage,
+                isUser: false
+            });
+        };
+
+        reader.readAsDataURL(file);
     });
 
     async function sendMessage(message = "") {
@@ -133,11 +170,13 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
+                    "prompt_id": promptId,
                     message,
-                    "prompt_id": promptId
                 }),
             });
+
             const data = await response.json();
+
             return data.message;
         } catch (error) {
             console.error("Erro ao enviar mensagem:", error);
@@ -149,7 +188,7 @@
     function appendMessage({
         message,
         isUser = true,
-        isTyping = false
+        isTyping = false,
     }) {
         const avatarSrc = isUser ? 'default-avatar.png' : 'grimore-avatar.webp';
         const typingClass = isTyping ? "animate-pulse" : "";
@@ -160,7 +199,7 @@
                     <img src="${avatarSrc}" alt="Avatar" class="" />
                 </div>
                 <div data-is-user="${isUser}" class="group relative">
-                    <p id="${id}" class="flex-1  py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words max-w-max ${typingClass}">${message}</p>
+                    <p id="${id}" class="flex-1 py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words max-w-max ${typingClass}">${message}</p>
                     <button data-copy-message="${id}" class="bg-white hidden group-hover:flex absolute top-0 -right-6 group-data-[is-user=true]:-left-6 rounded-full w-10 h-10 items-center justify-center transition-all hover:scale-110">
                         <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"></path>
@@ -173,6 +212,44 @@
         chatContainer.insertAdjacentHTML('beforeend', messageHTML);
         chatContainer.scrollTop = chatContainer.scrollHeight;
         return chatContainer.lastElementChild;
+    }
+
+    function apeendImage(imageUrl) {
+        const imageContainer = `
+            <div data-is-user="true" class="flex flex-row-reverse gap-2 mb-2">
+                <div class="w-6 h-6 overflow-hidden rounded-full">
+                    <img src="default-avatar.png" alt="Avatar" class="object-cover w-full h-full" />
+                </div>
+                <img src="${imageUrl}" alt="Uploaded Image" class="w-[200px] h-auto py-3 px-6 rounded-3xl bg-purple-300/10" />
+            </div>
+        `;
+    }
+
+    async function sendImageToAPI(file) {
+        const csrfToken = document.querySelector('input[name="_token"]').value; // Captura o token CSRF
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append("prompt_id", promptId)
+
+        try {
+            const response = await fetch('/api/chat/upload-image', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.message;
+
+            } else {
+                console.error('Erro ao enviar a imagem para a API.');
+            }
+        } catch (error) {
+            console.error('Erro de conexão com a API:', error);
+        }
     }
 
     function toggleSubmitButton(isDisabled) {

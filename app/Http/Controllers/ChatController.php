@@ -7,6 +7,7 @@ use App\Models\Prompt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Google\Cloud\Vision\V1\ImageAnnotatorClient;
 
 
 class ChatController extends Controller
@@ -89,7 +90,7 @@ class ChatController extends Controller
         ]);
     }
 
-    private function callGroqApi($message, $historicMessages = [])
+    private function callGroqApi($message = null, $historicMessages = [], $googleLabels = [])
     {
         // Recuperar a chave da API do Groq do arquivo .env
         $apiKey = env('GROQ_API_KEY');
@@ -106,13 +107,19 @@ class ChatController extends Controller
             ];
         }
 
+        foreach ($googleLabels as $label) {
+            $formattedHistoricMessages[] = [
+                'role' => 'system',
+                'content' => $label
+            ];
+        }
+
         $messages = array_merge($formattedHistoricMessages, [
             [
                 'role' => 'user',
                 'content' => $message
             ]
         ]);
-
 
         // Fazer a requisição POST usando o Laravel HTTP Client
         $response = Http::withHeaders([
@@ -129,5 +136,58 @@ class ChatController extends Controller
         }
 
         return 'Erro na API: ' . $response->body();
+    }
+
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $prompt_id = $request->input('prompt_id');
+
+        // Salvar a imagem no storage
+        $imagePath = $request->file('image')->store('images');
+
+        // Chamar o método de análise do Google Vision
+        $googleLabels = $this->analyzeImage(storage_path("app/private/$imagePath"));
+
+        // Fazer a chamada para a API do Groq
+        $response = $this->callGroqApi('Voc é uma IA que interpreta imagens a partir de objetos analisados dela, descrevendo a imagem. Interprete uma imagem baseada nos elementos descritos sem dizer que você está analisando, somente descrevendo a imagem analisada', [], $googleLabels);
+
+        Message::create([
+            'prompt_id' => $prompt_id,
+            'user_id' => 1,
+            'content' => $response,
+            'role' => 'bot',
+        ]);
+
+        return response()->json([
+            'message' => $response
+        ]);
+    }
+
+    private function analyzeImage($imagePath)
+    {
+        $apiKey = env('GOOGLE_VISION_KEY');
+        // Configurar o cliente do Google Vision
+        $client = new ImageAnnotatorClient([
+            'credentials' => base_path($apiKey) // Caminho da chave JSON do Google Vision
+        ]);
+
+        $imageContent = file_get_contents($imagePath);
+
+        // Enviar a imagem para o Google Vision para análise
+        $response = $client->labelDetection($imageContent);
+        $labels = $response->getLabelAnnotations();
+
+        $result = [];
+        foreach ($labels as $label) {
+            $result[] = $label->getDescription();
+        }
+
+        $client->close();
+
+        return $result;
     }
 }
