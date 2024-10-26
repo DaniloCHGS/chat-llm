@@ -8,12 +8,15 @@ use Illuminate\Contracts\View\View;
 
 class Chat extends Component
 {
+    public $chatId;
+    public $messages;
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public function __construct($chatId, $messages)
     {
-        //
+        $this->chatId = $chatId;
+        $this->messages = $messages;
     }
 
     /**

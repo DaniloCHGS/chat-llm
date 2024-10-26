@@ -11,16 +11,18 @@ class ChatPreview extends Component
     public $id;
     public $active;
     public $title;
+    public $createdAt;
     /**
      * Create a new ChatPreview component instance.
      *
      * @param bool $active Whether the chat preview is active or not.
      */
-    public function __construct($active, $id, $title)
+    public function __construct($active, $id, $title, $createdAt)
     {
         $this->active = $active;
         $this->id = $id;
         $this->title = $title;
+        $this->createdAt = $createdAt;
     }
 
     /**

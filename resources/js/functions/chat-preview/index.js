@@ -58,6 +58,9 @@ buttonsEditTitleChatPreview.forEach((button) => {
 buttonsEditTitleChatPreview.forEach((button) => {
     const component = button.closest("[data-chat-preview-id]");
     const createdAt = component.querySelector("[data-created-at]");
+    const time = createdAt.getAttribute("data-created-at");
+
+    console.log(timeAgo("1698153600"));
 
     createdAt.innerHTML = timeAgo("1698153600");
 });

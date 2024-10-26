@@ -1,4 +1,4 @@
-<main class="flex-1 card flex flex-col">
+<main data-chat-id="{{$chatId}}" class="flex-1 card flex flex-col">
     <header class="py-3 px-5 flex items-center justify-between border-b bg-[#f6f8fecc]">
         <div class="flex gap-2">
             <div class="w-11 h-11 overflow-hidden rounded-full">
@@ -22,7 +22,24 @@
             </div>
         </div>
     </header>
-    <div id="chat" class="flex-1 p-8 max-h-[496px] overflow-y-auto"></div>
+    <div id="chat" class="flex-1 p-8 max-h-[496px] overflow-y-auto">
+        @foreach($messages as $message)
+        <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="flex data-[is-user=true]:flex-row-reverse gap-2 mb-2">
+            <div class="w-6 h-6 overflow-hidden rounded-full">
+                <img src="{{$message->role === 'user' ? 'default-avatar.png':'grimore-avatar.webp'}}" alt="Avatar" class="" />
+            </div>
+            <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="group relative">
+                <p id="{{$message->id}}" class="flex-1  py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words max-w-max ${typingClass}">{{$message->content}}</p>
+                <button data-copy-message="${id}" class="bg-white hidden group-hover:flex absolute top-0 -right-6 group-data-[is-user=true]:-left-6 rounded-full w-10 h-10 items-center justify-center transition-all hover:scale-110">
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"></path>
+                        <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        @endforeach
+    </div>
     <footer class="bg-[#f6f8fecc] flex items-center gap-2 border-t py-6 px-8">
         <form id="form-chat" class="flex-1 bg-white rounded-full border p-2 pr-3 flex items-center gap-2">
             <button class="w-10 h-10 rounded-full bg-purple-400 text-white flex items-center justify-center">
@@ -59,25 +76,7 @@
     </footer>
 </main>
 <script>
-    async function sendMessage(message = "") {
-        try {
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message
-                }),
-            });
-            const data = await response.json();
-            return data.message;
-        } catch (error) {
-            console.error("Erro ao enviar mensagem:", error);
-            return "Erro ao enviar mensagem.";
-        }
-    }
-
+    const promptId = document.querySelector('[data-chat-id]').getAttribute('data-chat-id')
     const chatContainer = document.getElementById("chat");
     const formChat = document.getElementById("form-chat");
     const inputPrompt = document.getElementById("input-prompt");
@@ -126,6 +125,27 @@
         });
     });
 
+    async function sendMessage(message = "") {
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message,
+                    "prompt_id": promptId
+                }),
+            });
+            const data = await response.json();
+            return data.message;
+        } catch (error) {
+            console.error("Erro ao enviar mensagem:", error);
+            return "Erro ao enviar mensagem.";
+        }
+    }
+
+
     function appendMessage({
         message,
         isUser = true,
@@ -163,5 +183,16 @@
 
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
+    }
+
+    const messageElements = document.querySelectorAll('p');
+
+    if (messageElements.length > 0) {
+        const lastMessage = messageElements[messageElements.length - 1];
+
+        lastMessage.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
 </script>

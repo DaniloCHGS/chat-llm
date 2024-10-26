@@ -1,4 +1,4 @@
-<div data-active="{{$active}}" data-chat-preview-id="{{$id}}" data-title-editing="false" class="group relative p-4 border-b hover:cursor-pointer flex items-center justify-between data-[active=false]:before:hidden before:absolute before:w-[3px] before:left-0 before:h-10 before:bg-gradient-to-b from-[#a48fe6] to-transparent">
+<a href="{{$id}}" data-active="{{$active}}" data-chat-preview-id="{{$id}}" data-title-editing="false" class="group relative p-4 border-b hover:cursor-pointer flex items-center justify-between data-[active=false]:before:hidden before:absolute before:w-[3px] before:left-0 before:h-10 before:bg-gradient-to-b from-[#a48fe6] to-transparent">
     <div class="flex gap-3">
         <svg stroke-width="1.5" class="size-6 shrink-0 group-hover:text-theme-purple transition group-data-[active=true]:text-theme-purple" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path d="M8 9h8"></path>
@@ -10,7 +10,7 @@
                 <h2 class="text-sm font-semibold group-hover:text-theme-purple transition group-data-[active=true]:text-theme-purple group-data-[title-editing=true]:hidden">{{$title}}</h2>
                 <input type="text" class="hidden outline-none focus:border-theme-purple focus:border-2 rounded-md bg-theme-purple/10 text-theme-purple h-5 text-sm">
             </div>
-            <span data-created-at="" class="col-start-2 text-xs block text-zinc-400 opacity-60 group-hover:text-theme-purple transition group-data-[active=true]:text-theme-purple">há 1 segundo</span>
+            <span data-created-at="" class="col-start-2 text-xs block text-zinc-400 opacity-60 group-hover:text-theme-purple transition group-data-[active=true]:text-theme-purple">{{$createdAt}}</span>
         </header>
     </div>
     <div class="items-center gap-2 hidden group-data-[title-editing=false]:group-hover:flex transition duration-1000">
@@ -32,4 +32,4 @@
             <path d="M20 6 9 17l-5-5" />
         </svg>
     </button>
-</div>
+</a>

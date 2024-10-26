@@ -9,3 +9,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/chat', [ChatController::class, 'sendMessage']);
+Route::post('/chat/new-prompt', [ChatController::class, 'createNewPrompt']);
