@@ -17,7 +17,8 @@ class Message extends Model
         'user_id',
         'prompt_id',
         'created_at',
-        'role'
+        'role',
+        'image_path'
     ];
 
     public function user()
@@ -28,5 +29,10 @@ class Message extends Model
     public function prompt()
     {
         return $this->belongsTo(Prompt::class);
+    }
+
+    public function image()
+    {
+        return $this->hasOne(Image::class, 'id', 'image_path'); // 'id' do modelo Image e 'image_path' no modelo Message
     }
 }

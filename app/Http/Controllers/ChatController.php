@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Image;
 use App\Models\Message;
 use App\Models\Prompt;
 use Illuminate\Http\Request;
@@ -15,7 +16,8 @@ class ChatController extends Controller
     public function index($id = null)
     {
         $prompts = Prompt::all();
-        $messages = DB::table('messages')
+
+        $messages = Message::with('image')
             ->where('prompt_id', $id)
             ->get();
 
@@ -147,10 +149,19 @@ class ChatController extends Controller
         $prompt_id = $request->input('prompt_id');
 
         // Salvar a imagem no storage
-        $imagePath = $request->file('image')->store('images');
+        $imagePath = $request->file('image')->store('images', 'public');
+
+        // Salvar informações da imagem no banco de dados
+        $image = new Image();
+        $image->image_path = $imagePath; // Salvar o caminho da imagem
+        $image->content = implode(', ', $this->analyzeImage(storage_path("app/public/$imagePath"))); // Salvar labels como conteúdo
+        $image->user_id = 1; // Presumindo que você tenha um sistema de autenticação
+        $image->prompt_id = $prompt_id; // Ajuste conforme necessário
+        $image->role = 'user'; // Ajuste conforme necessário
+        $image->save(); // Salvar no banco de dados
 
         // Chamar o método de análise do Google Vision
-        $googleLabels = $this->analyzeImage(storage_path("app/private/$imagePath"));
+        $googleLabels = $this->analyzeImage(storage_path("app/public/$imagePath"));
 
         // Fazer a chamada para a API do Groq
         $response = $this->callGroqApi('Voc é uma IA que interpreta imagens a partir de objetos analisados dela, descrevendo a imagem. Interprete uma imagem baseada nos elementos descritos sem dizer que você está analisando, somente descrevendo a imagem analisada', [], $googleLabels);
@@ -160,6 +171,7 @@ class ChatController extends Controller
             'user_id' => 1,
             'content' => $response,
             'role' => 'bot',
+            'image_path' => $imagePath, // Salvar o caminho da imagem
         ]);
 
         return response()->json([

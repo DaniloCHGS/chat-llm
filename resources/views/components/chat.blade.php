@@ -24,11 +24,20 @@
     </header>
     <div id="chat" class="flex-1 p-8 max-h-[496px] overflow-y-auto">
         @foreach($messages as $message)
+        @if($message->image_path)
+        <div data-is-user="true" class="flex data-[is-user=true]:flex-row-reverse gap-2 mb-2">
+            <div class="w-6 h-6 overflow-hidden rounded-full">
+                <img src="default-avatar.png" alt="Avatar" class="" />
+            </div>
+            <div data-is-user="true" class="group relative">
+                <img id="{{$message->id}}" src="{{ url('/storage/' . $message->image_path) }}" alt="" class="w-[200px] h-auto py-3 px-6 rounded-3xl bg-purple-300/10" />
+            </div>
+        </div>
         <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="flex data-[is-user=true]:flex-row-reverse gap-2 mb-2">
             <div class="w-6 h-6 overflow-hidden rounded-full">
                 <img src="{{$message->role === 'user' ? 'default-avatar.png':'grimore-avatar.webp'}}" alt="Avatar" class="" />
             </div>
-            <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="group relative">
+            <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="group relative flex-1">
                 <p id="{{$message->id}}" class="flex-1  py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words max-w-max ${typingClass}">{{$message->content}}</p>
                 <button data-copy-message="${id}" class="bg-white hidden group-hover:flex absolute top-0 -right-6 group-data-[is-user=true]:-left-6 rounded-full w-10 h-10 items-center justify-center transition-all hover:scale-110">
                     <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -38,6 +47,22 @@
                 </button>
             </div>
         </div>
+        @else
+        <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="flex data-[is-user=true]:flex-row-reverse gap-2 mb-2">
+            <div class="w-6 h-6 overflow-hidden rounded-full">
+                <img src="{{$message->role === 'user' ? 'default-avatar.png':'grimore-avatar.webp'}}" alt="Avatar" class="" />
+            </div>
+            <div data-is-user="{{$message->role === 'user' ? 'true':'false'}}" class="group relative flex-1">
+                <p id="{{$message->id}}" class="flex-1  py-3 px-6 rounded-3xl bg-purple-300/10 text-sm font-sans font-medium whitespace-pre-wrap break-words max-w-max ${typingClass}">{{$message->content}}</p>
+                <button data-copy-message="${id}" class="bg-white hidden group-hover:flex absolute top-0 -right-6 group-data-[is-user=true]:-left-6 rounded-full w-10 h-10 items-center justify-center transition-all hover:scale-110">
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"></path>
+                        <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        @endif
         @endforeach
     </div>
     <footer class="bg-[#f6f8fecc] flex items-center gap-2 border-t py-6 px-8">
