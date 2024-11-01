@@ -54,27 +54,45 @@ Execute o comando abaixo para construir os contêineres:
 docker-compose up -d --build
 ```
 
-3 - Acesse o Contêiner do Aplicativo
+3 - Instale as Dependências do Laravel
 
 ```bash
-docker-compose exec app bash
+docker-compose exec app composer install
 ```
 
-4 - Execute a Migração e o Seed do Banco de Dados
+4 - Gere a Chave de Aplicação
 
 ```bash
-php artisan migrate --seed
+docker-compose exec app php artisan key:generate
 ```
 
-5 - Crie um Link Simbólico para o Storage do Laravel
+5 - Execute as Migrações e o Seed do Banco de Dados
 
 ```bash
-php artisan storage:link
+docker-compose exec app php artisan migrate --seed
 ```
 
-6 - Mova o arquivo chat-llm-439820-79477fff5a23 para storage/app
+6 - Crie um Link Simbólico para o Storage do Laravel
 
-7 - Acesse a Aplicação
+```bash
+docker-compose exec app php artisan storage:link
+```
+
+7 - Mova o arquivo chat-llm-439820-79477fff5a23 para storage/app
+
+8 - Instale as Dependências do Node
+
+```bash
+docker-compose exec app npm install
+```
+
+9 - Gere um build do Front-end
+
+```bash
+docker-compose exec app npm run build
+```
+
+10 - Acesse a Aplicação
 
 ```bash
 http://localhost
