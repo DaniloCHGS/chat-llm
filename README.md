@@ -18,16 +18,6 @@ git clone git@github.com:DaniloCHGS/chat-llm.git
 cd chat-llm
 ```
 
-# Estrutura do Projeto
-
-O projeto contém os seguintes diretórios principais:
-
--   app/: Código-fonte do Laravel.
--   public/: Diretório público para os ativos (CSS, JavaScript, imagens).
--   resources/: Recursos como views, arquivos de tradução e estilos.
--   docker/: Contém arquivos de configuração do Docker.
--   nginx/: Configurações do servidor Nginx.
-
 # Configurando o Projeto com Docker
 
 1 - Crie um arquivo .env (Copie o .env.example)
