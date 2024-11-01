@@ -68,7 +68,7 @@ docker-compose exec app php artisan migrate --seed
 docker-compose exec app php artisan storage:link
 ```
 
-7 - Mova o arquivo chat-llm-439820-79477fff5a23 para storage/app
+7 - Mova a chave chat-llm.json (que foir enviada) para storage/app
 
 8 - Instale as Dependências do Node
 
