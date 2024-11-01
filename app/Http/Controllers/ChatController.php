@@ -32,7 +32,8 @@ class ChatController extends Controller
         return view('chat', [
             'prompts' => $updatedPrompts,
             'messages' => $messages,
-            'using_prompt' => $id
+            'using_prompt' => $id,
+            'prompt_id' => $id,
         ]);
     }
 
@@ -48,9 +49,20 @@ class ChatController extends Controller
         return redirect()->route('chat.index', ['id' => $prompt->id]);
     }
 
-    public function delete(Prompt $id)
+    public function delete($id)
     {
-        dd($id);
+        // Tente buscar o registro no banco de dados
+        $prompt = DB::table('prompts')->where('id', $id)->first();
+
+        // Verifique se o registro existe
+        if ($prompt) {
+            DB::table('prompts')->where('id', $id)->delete();
+        } else {
+            // Retorne um erro ou redirecione com uma mensagem se o registro não for encontrado
+            return redirect()->route('chat.index')->with('error', 'Prompt not found');
+        }
+
+        return redirect()->route('chat.index')->with('success', 'Prompt deleted successfully');
     }
 
     public function sendMessage(Request $request)

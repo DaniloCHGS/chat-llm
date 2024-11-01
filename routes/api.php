@@ -10,4 +10,3 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/chat', [ChatController::class, 'sendMessage']);
 Route::post('/chat/upload-image', [ChatController::class, 'uploadImage']);
-Route::post('/chat/new-prompt', [ChatController::class, 'createNewPrompt']);

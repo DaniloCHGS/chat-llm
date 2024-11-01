@@ -1,29 +1,44 @@
-# Etapa 1: Define a imagem base do PHP com todas as extensões necessárias para o Laravel
+# Use uma imagem do PHP com extensões necessárias para Laravel
 FROM php:8.2-fpm
 
-# Instala dependências e ferramentas do sistema
+# Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
+    locales \
     zip \
+    jpegoptim optipng pngquant gifsicle \
     unzip \
+    curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install pdo pdo_mysql gd
 
-# Instala o Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Instala Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia os arquivos do projeto para o container
+# Instala Node.js e npm
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Define o diretório de trabalho
 WORKDIR /var/www
-COPY . .
+
+# Copia o arquivo de configuração php.ini (opcional)
+COPY ./php.ini /usr/local/etc/php/
 
 # Instala dependências do Laravel
-RUN composer install
+COPY . .
+RUN composer install --optimize-autoloader --no-dev
 
-# Define as permissões do diretório de cache e logs
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+# Instala dependências do Node.js
+RUN npm install
+RUN npm run build
 
-# Expõe a porta do servidor Laravel
+# Define permissões de pastas de armazenamento
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+# Expõe a porta do servidor PHP
 EXPOSE 9000
+
+CMD ["php-fpm"]
